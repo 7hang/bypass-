@@ -1,0 +1,6 @@
+
+Content-Disposition: form-data; name="up_picture"; filename="xss.php"
+
+添加回车  
+Content-Disposition: form-data; name="up_picture"; filename="xss.ph
+p"
